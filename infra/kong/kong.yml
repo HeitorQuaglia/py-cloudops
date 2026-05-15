@@ -1,0 +1,30 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: api-ingress
+    url: http://api-ingress:8000
+    routes:
+      - name: operations
+        paths:
+          - /v1/operations
+        strip_path: false
+        methods:
+          - POST
+          - GET
+
+consumers:
+  - username: demo-user
+    keyauth_credentials:
+      - key: demo-key-please-change
+
+plugins:
+  - name: key-auth
+    config:
+      key_names: ["X-API-Key"]
+      hide_credentials: true
+  - name: correlation-id
+    config:
+      header_name: X-Correlation-ID
+      generator: uuid
+      echo_downstream: true
