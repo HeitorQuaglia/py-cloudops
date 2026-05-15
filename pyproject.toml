@@ -1,0 +1,28 @@
+[project]
+name = "py-cloudops"
+version = "0.1.0"
+description = "Educational event-driven SAGA for cloud ops automation"
+requires-python = ">=3.12"
+
+[tool.uv.workspace]
+members = [
+    "libs/cloudops-core",
+    "services/api-ingress",
+    "services/orchestrator",
+    "services/catalog",
+    "services/provisioning",
+    "services/audit",
+]
+
+[tool.uv.sources]
+cloudops-core = { workspace = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
