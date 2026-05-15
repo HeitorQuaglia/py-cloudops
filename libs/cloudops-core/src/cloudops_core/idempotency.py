@@ -23,8 +23,8 @@ async def claim_message(session: AsyncSession, *, message_id: str, handler: str)
     try:
         await session.execute(
             text(
-                "INSERT INTO processed_messages (message_id, handler) "
-                "VALUES (:mid, :h)"
+                "INSERT INTO processed_messages (message_id, handler, processed_at) "
+                "VALUES (:mid, :h, now())"
             ),
             {"mid": message_id, "h": handler},
         )
