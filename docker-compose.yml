@@ -93,6 +93,84 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    depends_on:
+      - api-ingress
+
+  api-ingress:
+    build:
+      context: .
+      dockerfile: services/api-ingress/Dockerfile
+    container_name: cloudops-api-ingress
+    environment:
+      AMQP_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    expose:
+      - "8000"
+
+  orchestrator:
+    build:
+      context: .
+      dockerfile: services/orchestrator/Dockerfile
+    container_name: cloudops-orchestrator
+    environment:
+      AMQP_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      ORCHESTRATOR_DB_DSN: postgresql+asyncpg://${ORCHESTRATOR_DB_USER}:${ORCHESTRATOR_DB_PASSWORD}@postgres:5432/orchestrator_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  catalog:
+    build:
+      context: .
+      dockerfile: services/catalog/Dockerfile
+    container_name: cloudops-catalog
+    environment:
+      AMQP_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      CATALOG_DB_DSN: postgresql+asyncpg://${CATALOG_DB_USER}:${CATALOG_DB_PASSWORD}@postgres:5432/catalog_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  provisioning:
+    build:
+      context: .
+      dockerfile: services/provisioning/Dockerfile
+    container_name: cloudops-provisioning
+    environment:
+      AMQP_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      PROVISIONING_DB_DSN: postgresql+asyncpg://${PROVISIONING_DB_USER}:${PROVISIONING_DB_PASSWORD}@postgres:5432/provisioning_db
+      AWS_ENDPOINT_URL: http://localstack:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+
+  audit:
+    build:
+      context: .
+      dockerfile: services/audit/Dockerfile
+    container_name: cloudops-audit
+    environment:
+      AMQP_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      MONGO_URL: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb:27017/?authSource=admin
+      MONGO_DB: audit_db
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
 volumes:
   postgres_data:
