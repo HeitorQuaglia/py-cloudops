@@ -1,0 +1,60 @@
+{
+  "users": [
+    {
+      "name": "cloudops",
+      "password": "cloudops_pw",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [{ "name": "/" }],
+  "permissions": [
+    {
+      "user": "cloudops",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    { "name": "cloudops.commands", "vhost": "/", "type": "topic", "durable": true },
+    { "name": "cloudops.events",   "vhost": "/", "type": "topic", "durable": true },
+    { "name": "cloudops.dlx",      "vhost": "/", "type": "fanout", "durable": true }
+  ],
+  "queues": [
+    {
+      "name": "catalog.commands", "vhost": "/", "durable": true,
+      "arguments": { "x-dead-letter-exchange": "cloudops.dlx" }
+    },
+    {
+      "name": "provisioning.commands", "vhost": "/", "durable": true,
+      "arguments": { "x-dead-letter-exchange": "cloudops.dlx" }
+    },
+    {
+      "name": "orchestrator.replies", "vhost": "/", "durable": true,
+      "arguments": { "x-dead-letter-exchange": "cloudops.dlx" }
+    },
+    {
+      "name": "audit.all", "vhost": "/", "durable": true
+    },
+    {
+      "name": "cloudops.dlq", "vhost": "/", "durable": true
+    }
+  ],
+  "bindings": [
+    { "source": "cloudops.commands", "vhost": "/", "destination": "catalog.commands",
+      "destination_type": "queue", "routing_key": "cmd.catalog.*" },
+    { "source": "cloudops.commands", "vhost": "/", "destination": "provisioning.commands",
+      "destination_type": "queue", "routing_key": "cmd.provisioning.*" },
+    { "source": "cloudops.events", "vhost": "/", "destination": "orchestrator.replies",
+      "destination_type": "queue", "routing_key": "evt.*.completed" },
+    { "source": "cloudops.events", "vhost": "/", "destination": "orchestrator.replies",
+      "destination_type": "queue", "routing_key": "evt.*.failed" },
+    { "source": "cloudops.events", "vhost": "/", "destination": "audit.all",
+      "destination_type": "queue", "routing_key": "evt.#" },
+    { "source": "cloudops.events", "vhost": "/", "destination": "audit.all",
+      "destination_type": "queue", "routing_key": "cmd.#" },
+    { "source": "cloudops.dlx", "vhost": "/", "destination": "cloudops.dlq",
+      "destination_type": "queue", "routing_key": "" }
+  ]
+}
