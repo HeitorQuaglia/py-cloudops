@@ -72,7 +72,7 @@ services:
       retries: 10
 
   kong:
-    image: kong:latest
+    image: kong:3.7
     container_name: cloudops-kong
     environment:
       KONG_DATABASE: "off"
